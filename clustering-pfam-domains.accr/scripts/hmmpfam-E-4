@@ -1,0 +1,19 @@
+#!/usr/bin/ruby
+
+DIR  = "~/projects/5-nsi-split/clustering-pfam-domains"
+QSUB = "/usr/local/bin/qsub"
+
+File.open(File.expand_path("#{DIR}/qsub-submit"), 'w') do |q|
+  q.puts "#!/bin/sh"
+  1.upto(100) do |i|
+   id = i.to_s.rjust(3, '0')
+   cmd = "time hmmpfam --cpu 1 -E 1e-4 /srv/projects/db/PFAM/Pfam_ls " +
+         "#{DIR}/#{id}-searchspace | #{DIR}/scripts/filter-hmmpfam-output &> #{DIR}/#{id}-domains"
+   q.puts "echo \"#{cmd}\" | qsub"
+  end
+end
+`chmod +x #{DIR}/qsub-submit`
+
+puts "Run: ./qsub-submit"
+puts "When evering is done run: cat *-domain | ./scripts/get-clusters"
+

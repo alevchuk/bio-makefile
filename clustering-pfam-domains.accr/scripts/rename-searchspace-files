@@ -1,0 +1,18 @@
+#!/usr/bin/ruby
+
+if __FILE__ =~ /rename-(.*)-files/
+  NAME = $1
+else
+  STDERR.puts "ERROR: Filename must have 'rename-(.*)-files' but #{__FILE__}"
+  exit
+end
+
+
+Dir.glob("#{NAME}-*").each do |old_name|
+  if old_name =~ /^#{NAME}-([0-9]*)$/
+    cmd = "/bin/mv #{old_name} #{$1}-#{NAME}"
+    `#{cmd}`
+  else
+    STDERR.puts "WARNING: Bad filename #{old_name}"
+  end
+end

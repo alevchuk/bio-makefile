@@ -1,0 +1,38 @@
+#!/usr/bin/ruby
+
+DIR = File.dirname(__FILE__)
+
+if ARGV.size < 2
+  STDERR.puts "Usage: #{__FILE__.split('/').last} <sourcefasta> <idsfile1> [<idsfile2> ...]"
+  exit(1)
+end
+
+SOURCE_FASTA = ARGV[0]
+ID_FILES     = ARGV[1..-1]
+
+ID_FILES.each do |ids_file|
+
+  ids = File.open(ids_file){|f| f.readlines}.collect{|i| i.chomp}
+
+  File.open("#{ids_file}.fasta", 'w') do |out|
+    File.open(SOURCE_FASTA) do |s|
+      print_sequence = false
+      while line = s.gets
+        if line =~ /^>(.*?)( |\n)/
+          print_sequence = false
+          if ids.include?($1)
+
+            ids.delete($1) # Forget assession IDs as soon as
+                               # they are encountered. Saves time.
+
+            print_sequence = true
+            out.puts line.chomp
+          end
+
+        elsif print_sequence
+          out.puts line.chomp 
+        end
+      end
+    end
+  end
+end

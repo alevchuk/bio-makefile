@@ -1,0 +1,32 @@
+#!/usr/bin/ruby
+
+# Takes a list of Blast output files
+# (please run blastall with the "-b 0" argument)
+
+UNIQ_GENE_IDs = {}
+
+ARGV.each do |file_name|
+  File.open(file_name) do |f|
+
+    state = :skipping
+
+    while line = f.gets
+      word1 = line.split(' ').first
+      if word1 == 'Sequences'
+        state = :about_to_start_reading
+
+      elsif line == "\n" and state == :reading
+        state = :skipping
+
+      elsif line == "\n" and state == :about_to_start_reading
+        state = :reading
+
+      elsif state == :reading
+        UNIQ_GENE_IDs[word1] = nil
+
+      end
+    end
+  end
+end
+
+puts UNIQ_GENE_IDs.keys

@@ -1,0 +1,20 @@
+#!/usr/bin/ruby
+
+DIR = `pwd`.chomp
+
+
+Dir.glob("#{DIR}/*-input").sort.each do |i|
+  shell_file = i.sub('-input', '.sh')
+  out  = i.sub('-input', '-hits')
+
+  File.open(shell_file, 'w') do |f|
+   f.puts "#!/bin/bash\n" +
+     "blastall -p blastp -i #{i} -d #{DIR}/UNIPROT-AND-MORE.fasta " +
+     "-o #{out} -v 100000 -b 0 -e 1e-20\n"
+  end
+  `chmod +x #{shell_file}`
+
+end
+
+puts "Run:"
+puts "  echo #{DIR}/*sh | xargs -n 1 qsub"

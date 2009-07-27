@@ -1,0 +1,56 @@
+#!/usr/bin/ruby
+
+DIR = File.dirname(__FILE__)
+
+if ARGV.empty?
+  STDERR.puts "Usage: #{__FILE__.split('/').last} 01-results 02-results ..."
+  exit(1)
+end
+
+ARGV.each do |results_file|
+  if !(results_file =~ /(.+?)-results$/)
+    STDERR.puts "WARNING: File does not match naming conviention! Skipping..." 
+    STDERR.puts "         #{results_file}"
+    next
+  end
+
+  input_file = "#{$`}#{$1}-input"
+
+  if !File.exists?(input_file)
+    STDERR.puts "WARNING: No corresponding input file! Skipping..."
+    STDERR.puts "         #{input_file}"
+    next
+  end
+
+  results = File.open(results_file){|f| f.readlines.collect{|l| l.chomp}}
+
+  File.open(input_file) do |input|
+    print_sequence = false
+    count = 0
+
+    while line = input.gets
+      if line =~ /^>(.*?)( |\n)/
+        id = $1
+
+        print_sequence = false
+        if results.include?(id)
+
+          results.delete(id) # Forget assession IDs as soon as
+                             # they are encountered. Saves time.
+
+          print_sequence = true
+          puts line.chomp
+          STDERR.puts line.chomp
+        end
+
+
+        count += 1
+        STDERR.puts count if count % 1000 == 0
+
+      elsif print_sequence
+        puts line.chomp 
+      end
+
+    end
+  end
+end
